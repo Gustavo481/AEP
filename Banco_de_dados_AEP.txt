@@ -1,0 +1,103 @@
+CREATE TABLE Agricultor (
+    cadastroAgricultor INT NOT NULL,
+    nome      VARCHAR2(40) NOT NULL,
+    CPF       VARCHAR2(14) NOT NULL,
+    CONSTRAINT Cadastro_Rural_Agricultor_PK PRIMARY KEY (cadastroAgricultor)
+);
+
+CREATE TABLE Propriedade (
+    cadastroAgricultor INT NOT NULL,
+    end_prop  VARCHAR2(40) NOT NULL, -- endereço propriedade
+    dim_prop  FLOAT        NOT NULL, -- dimenções da propriedade
+    tipo_solo VARCHAR2(40) NOT NULL,
+    CONSTRAINT Cadastro_Rural_Agricultor_FK FOREIGN KEY (cadastroAgricultor) REFERENCES Agricultor (cadastroAgricultor),
+    CONSTRAINT Endereço_Propriedade_PK PRIMARY KEY (end_prop)
+);
+
+CREATE TABLE Area_plantada (
+    areaPlantio        INT NOT NULL,
+    cadastroAgricultor INT NOT NULL,
+    m_Area    VARCHAR2(20) NOT NULL, -- melhor cultiva para a area
+    end_prop  VARCHAR2(20) NOT NULL, -- endereço da propriedade
+    tipo_sem  VARCHAR2(20) NOT NULL, -- tipo de cultivo semeado
+    CONSTRAINT Area_Plantio_PK PRIMARY KEY (areaPlantio),
+    CONSTRAINT AP_Cadastro_Rural_Agricultor_FK FOREIGN KEY (cadastroAgricultor) REFERENCES Agricultor (cadastroAgricultor),
+    CONSTRAINT AP_Endereço_Propriedade_FK FOREIGN KEY (end_prop) REFERENCES Propriedade (end_prop)
+);
+
+CREATE TABLE Caracteristicas_Cultura (
+    tempoCultivo        INT NOT NULL,
+    tipo_Graos VARCHAR2(20) NOT NULL,
+    prod_hec            INT NOT NULL, -- produção por hectare
+    areaPlantio         INT NOT NULL,
+    cadastroAgricultor  INT NOT NULL,
+    CONSTRAINT CC_Area_Plantio_FK FOREIGN KEY (areaPlantio) REFERENCES Area_plantada (areaPlantio),
+    CONSTRAINT CC_Cad_Rural_Agricultor_FK FOREIGN KEY (cadastroAgricultor) REFERENCES Agricultor (cadastroAgricultor)
+);
+
+CREATE TABLE Inicio_Plantio (
+    semeadura          DATE NOT NULL,
+    Per_gem             INT NOT NULL, -- periodo de geminação
+    prec_plu            INT NOT NULL, -- precitpitação pluvial para o periodo
+    CONSTRAINT Semeadura_PK PRIMARY KEY (semeadura)
+);
+
+CREATE TABLE Produtos (
+    cod_prod            INT NOT NULL, -- codigo do produto
+    semeadura          DATE NOT NULL,
+    vlr_prod            INT NOT NULL,
+    CONSTRAINT cod_prod_PK PRIMARY KEY (cod_prod),
+    CONSTRAINT P_Semeadura_FK FOREIGN KEY (semeadura) REFERENCES Inicio_Plantio (semeadura)
+);
+
+CREATE TABLE Dosagem_Produtos (
+    ID_prod            INT NOT NULL,
+    cod_prod           INT NOT NULL,
+    semeadura         DATE NOT NULL,
+    vlr_prod           INT NOT NULL,
+    dosagem_prod     FLOAT NOT NULL,
+    descr_prod  VARCHAR2(40) NOT NULL,
+    CONSTRAINT ID_prod_PK PRIMARY KEY (ID_prod),
+    CONSTRAINT DP_cod_prod_FK FOREIGN KEY (cod_prod) REFERENCES Produtos (cod_prod),
+    CONSTRAINT DP_Semeadura_FK FOREIGN KEY (semeadura) REFERENCES Inicio_Plantio (semeadura)
+);
+
+CREATE TABLE Custo_Prod (
+    ID_prod            INT NOT NULL,
+    vlr_prod           INT NOT NULL,
+    descr_prod VARCHAR2(40) NOT NULL,
+    CONSTRAINT CP_ID_prod_FK FOREIGN KEY (ID_prod) REFERENCES Dosagem_Produtos (ID_prod)
+);
+
+CREATE TABLE Colheita (
+    ID_prod            INT NOT NULL,
+    vlr_prod           INT NOT NULL,
+    data_colheita     DATE NOT NULL,
+    prod_hec           INT NOT NULL, -- produção por hectare
+    CONSTRAINT C_ID_prod_FK FOREIGN KEY (ID_prod) REFERENCES Dosagem_Produtos (ID_prod)
+);
+
+
+--COMANDOS DML - POPULANDO O BANCO DE DADOS
+--TABELA AGRICULTOR
+
+INSERT INTO Agricultor(cadastroAgricultor, nome, CPF) VALUES(01,'CARLOS RODRIGUES','215.365.456-58');
+INSERT INTO Agricultor(cadastroAgricultor, nome, CPF) VALUES(02,'MIRELA DE SOUZA','154.321.456-66');
+INSERT INTO Agricultor(cadastroAgricultor, nome, CPF) VALUES(03,'MARCOS CORREIA','784.555.654-56');
+INSERT INTO Agricultor(cadastroAgricultor, nome, CPF) VALUES(04,'MARIA ROBERTA','145.152.456-65');
+
+--TABELA PROPRIEDADE
+
+INSERT INTO Propriedade(cadastroAgricultor, end_prop, dim_prop, tipo_solo) VALUES(01,'RUA M. DE SOARES',215.15,'NEOSSOLO QUARTZARÊNICO');
+INSERT INTO Propriedade(cadastroAgricultor, end_prop, dim_prop, tipo_solo) VALUES(02,'RUA B. DE SOARES',500,'NITOSSOLO VERMELHO');
+INSERT INTO Propriedade(cadastroAgricultor, end_prop, dim_prop, tipo_solo) VALUES(03,'RUA A. DE SOARES', 1000, 'NITOSSOLO VERMELHO');
+INSERT INTO Propriedade(cadastroAgricultor, end_prop, dim_prop, tipo_solo) VALUES(04,'RUA C. DE SOARES',1500, 'NITOSSOLO VERMELHO');
+
+COMMIT;
+
+SELECT * FROM Agricultor
+
+SELECT * FROM Propriedade
+
+SELECT A.cadastroAgricultor, A.nome, A.CPF, P.end_prop
+FROM Agricultor A INNER JOIN Propriedade P ON A.cadastroAgricultor = P.cadastroAgricultor
